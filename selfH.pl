@@ -18,12 +18,12 @@ use warnings;
 my $directory = '/media/sf_C/FTDI/i2cSoftware';
 
 #gathering file *.c *.h names
-my ($refC, $refH) = &filling(); 
+my ($refC, $refH) = filling(); 
 my @cfiles = @$refC;
 my @hfiles = @$refH;
 
 #creating h files, and prototpes
-&balanceCH(\@cfiles, \@hfiles);
+balanceCH(\@cfiles, \@hfiles);
 
 exit(0);
 
@@ -74,7 +74,7 @@ sub balanceCH {
     foreach my $cName (@cfiles) {
         (my $hName = $cName) =~ s/.c/.h/;
         # print("$hName\n");
-        my @cfunctions = &funcName($cName);
+        my @cfunctions = funcName($cName);
         # does the h file exist?
         if (grep(!/^$hName/i, @hfiles)) {
             open(OUTPUT, ">>$hName") or die $!;
@@ -83,7 +83,7 @@ sub balanceCH {
         }
         else {
             # compare function content
-            my @hfunctions = &funcName($hName);
+            my @hfunctions = funcName($hName);
             my @newlines = "";
             foreach my $cline (@cfunctions) {
                 if (grep(!/^$cline/i, @hfunctions)) {
