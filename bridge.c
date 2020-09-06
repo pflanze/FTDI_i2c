@@ -29,7 +29,11 @@ DWORD dev_createInfo(void) {
 /*// create the device information list
 
 Note:
-    Please note that Linux, Mac OS X and Windows CE do not support location IDs. As such, the Location ID parameter in the structure will be empty under these operating systems
+
+    Please note that Linux, Mac OS X and Windows CE do not support
+    location IDs. As such, the Location ID parameter in the structure
+    will be empty under these operating systems
+    
     ftHandle=Null >>> indicates that a handle has not yet been created or open
 */
 
