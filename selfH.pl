@@ -31,7 +31,7 @@ exit(0);
 sub filling {
     my @cfiles;
     my @hfiles;
-    opendir(DIR, $directory) or die $!;
+    opendir DIR, $directory or die $!;
 
     while (my $file = readdir(DIR)) {
         if (($file =~ /[.]{1}c$/) && ($file !~ /main\.c/)) {
@@ -44,14 +44,14 @@ sub filling {
         }
         else { next; }
     }
-    close(DIR);
+    close DIR or die $!;
     return (\@cfiles, \@hfiles)
 }
 
 #retuns names of the function prototypes required in the *.h file
 sub funcName {
     my $filename = $_[0];
-    open(INPUT, "<$filename") or die $!;;
+    open INPUT, "<$filename" or die $!;;
     my @func;
     while (<INPUT>) {
         if (/(^(\w){1,}.*)+\(\w{1,}\)+{+(.*)$/) {
@@ -60,7 +60,7 @@ sub funcName {
             push @func, "$found;";
         }
     }
-    close(INPUT);
+    close INPUT or die $!;
     return @func;
 }
 
@@ -77,9 +77,9 @@ sub balanceCH {
         my @cfunctions = funcName($cName);
         # does the h file exist?
         if (grep(!/^$hName/i, @hfiles)) {
-            open(OUTPUT, ">>$hName") or die $!;
+            open OUTPUT, ">>$hName" or die $!;
             print OUTPUT "$_\n" for @cfunctions;
-            close(OUTPUT);
+            close OUTPUT or die $!;
         }
         else {
             # compare function content
@@ -90,9 +90,9 @@ sub balanceCH {
                     push $cline, @newlines;
                 }
             }
-            open(OUTPUT, ">>$hName") or die $!;
+            open OUTPUT, ">>$hName" or die $!;
             print OUTPUT "$_\n" for @newlines;
-            close(OUTPUT);
+            close OUTPUT or die $!;
         }
     }
 }
