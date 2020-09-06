@@ -39,7 +39,8 @@ sub filling {
 
 #retuns names of the function prototypes required in the *.h file
 sub funcName {
-    my $filename = $_[0];
+    my ($filename) = @_;
+
     open INPUT, "<", $filename or die $!;
     my @func;
     while (<INPUT>) {
@@ -57,15 +58,14 @@ sub funcName {
 #if does not exist: create and fill
 #if it does: cross reference and append new functions
 sub balanceCH {
-    my @cfiles = @{$_[0]};
-    my @hfiles = @{$_[1]};
+    my ($cfiles, $hfiles)= @_;
 
-    foreach my $cName (@cfiles) {
+    foreach my $cName (@$cfiles) {
         (my $hName = $cName) =~ s/.c/.h/;
         # print("$hName\n");
         my @cfunctions = funcName($cName);
         # does the h file exist?
-        if (grep(!/^$hName/i, @hfiles)) {
+        if (grep(!/^$hName/i, @$hfiles)) {
             open OUTPUT, ">>", $hName or die $!;
             print OUTPUT "$_\n" for @cfunctions;
             close OUTPUT or die $!;
