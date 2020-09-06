@@ -37,6 +37,9 @@ sub filling {
     return (\@cfiles, \@hfiles)
 }
 
+use FP::Repl; repl;
+exit;
+
 #retuns names of the function prototypes required in the *.h file
 sub funcName {
     my ($filename) = @_;
