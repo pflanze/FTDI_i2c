@@ -33,7 +33,7 @@ sub filling {
         }
         else { next; }
     }
-    close DIR or die $!;
+    closedir DIR or die $!;
     return (\@cfiles, \@hfiles)
 }
 
