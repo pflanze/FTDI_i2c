@@ -19,7 +19,7 @@ my $directory = '/media/sf_C/FTDI/i2cSoftware';
 
 #gathering file *.c *.h names
 my ($refC, $refH) = &filling(); 
-my @cfiles = @$refC ;
+my @cfiles = @$refC;
 my @hfiles = @$refH;
 
 #creating h files, and prototpes
@@ -28,28 +28,28 @@ my @hfiles = @$refH;
 exit(0);
 
 #Fills arrays with '.c' and '.h' files
-sub filling{
+sub filling {
     my @cfiles;
     my @hfiles;
-    opendir (DIR, $directory) or die $!;
+    opendir(DIR, $directory) or die $!;
 
     while (my $file = readdir(DIR)) {
-        if(($file =~ /[.]{1}c$/) && ($file !~ /main\.c/)){
+        if (($file =~ /[.]{1}c$/) && ($file !~ /main\.c/)) {
             # print "$file\n";
             push(@cfiles, $file);
         }
-        elsif($file =~ /[.]{1}h$/){
+        elsif ($file =~ /[.]{1}h$/) {
             push(@hfiles, $file);
             # print "$file\n";
         }
-        else{next;}
+        else { next; }
     }
     close(DIR);
     return (\@cfiles, \@hfiles)
 }
 
 #retuns names of the function prototypes required in the *.h file
-sub funcName{
+sub funcName {
     my $filename = $_[0];
     open(INPUT, "<$filename") or die $!;;
     my @func;
@@ -67,24 +67,26 @@ sub funcName{
 #create coresponding h files
 #if does not exist: create and fill
 #if it does: cross reference and append new functions
-sub balanceCH{
+sub balanceCH {
     my @cfiles = @{$_[0]};
     my @hfiles = @{$_[1]};
 
-    foreach my $cName (@cfiles){
+    foreach my $cName (@cfiles) {
         (my $hName = $cName) =~ s/.c/.h/;
         # print("$hName\n");
         my @cfunctions = &funcName($cName);
-        if(grep(!/^$hName/i, @hfiles)){#does the h file exist
+        # does the h file exist?
+        if (grep(!/^$hName/i, @hfiles)) {
             open(OUTPUT, ">>$hName") or die $!;
             print OUTPUT "$_\n" for @functions;
             close(OUTPUT);
         }
-        else{#compare function content
+        else {
+            # compare function content
             my @hfunctions = &funcName($hName);
             my @newlines = "";
-            foreach my $cline (@cfunctions){
-                if(grep(!/^$cline/i, @hfunctions)){
+            foreach my $cline (@cfunctions) {
+                if (grep(!/^$cline/i, @hfunctions)) {
                     push($cline, @newlines);
                 }
             }
