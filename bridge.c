@@ -10,7 +10,7 @@
 Notes:
     Call before 
 */
-DWORD dev_createInfo(void) {
+DWORD dev_createInfo(abr) {
     // create the device information list
     DWORD numDevs;
     FT_STATUS ftStatus = FT_CreateDeviceInfoList(&numDevs);
