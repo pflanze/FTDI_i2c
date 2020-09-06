@@ -45,7 +45,7 @@ sub funcName {
     my @func;
     while (<INPUT>) {
         if (/(^(\w){1,}.*)+\(\w{1,}\)+{+(.*)$/) {
-            my ($found, $rest) = split(/{/, $_);
+            my ($found, $rest) = split(/{/, $_, 2);
             # print("$found\n");
             push @func, "$found;";
         }
