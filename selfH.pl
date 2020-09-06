@@ -36,10 +36,10 @@ sub filling {
     while (my $file = readdir(DIR)) {
         if (($file =~ /[.]{1}c$/) && ($file !~ /main\.c/)) {
             # print "$file\n";
-            push(@cfiles, $file);
+            push @cfiles, $file;
         }
         elsif ($file =~ /[.]{1}h$/) {
-            push(@hfiles, $file);
+            push @hfiles, $file;
             # print "$file\n";
         }
         else { next; }
@@ -57,7 +57,7 @@ sub funcName {
         if (/(^(\w){1,}.*)+\(\w{1,}\)+{+(.*)$/) {
             my ($found, $rest) = split(/{/, $_);
             # print("$found\n");
-            push(@func, "$found;");
+            push @func, "$found;";
         }
     }
     close(INPUT);
@@ -87,7 +87,7 @@ sub balanceCH {
             my @newlines = "";
             foreach my $cline (@cfunctions) {
                 if (grep(!/^$cline/i, @hfunctions)) {
-                    push($cline, @newlines);
+                    push $cline, @newlines;
                 }
             }
             open(OUTPUT, ">>$hName") or die $!;
