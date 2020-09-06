@@ -78,7 +78,7 @@ sub balanceCH {
         # does the h file exist?
         if (grep(!/^$hName/i, @hfiles)) {
             open(OUTPUT, ">>$hName") or die $!;
-            print OUTPUT "$_\n" for @functions;
+            print OUTPUT "$_\n" for @cfunctions;
             close(OUTPUT);
         }
         else {
