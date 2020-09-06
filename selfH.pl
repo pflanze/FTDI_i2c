@@ -88,7 +88,7 @@ sub balanceCH {
 
 
 #replace with your own directory
-my $directory = '/media/sf_C/FTDI/i2cSoftware';
+my $directory = '.';
 
 #gathering file *.c *.h names
 my ($refC, $refH) = filling($directory);
