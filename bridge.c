@@ -37,7 +37,8 @@ FT_DEVICE_LIST_INFO_NODE* dev_getInfo(void) {
     DWORD numDevs = dev_createInfo();      
     if (numDevs > 0) {
         // allocate storage for list based on numDevs
-        FT_DEVICE_LIST_INFO_NODE* devInfo = (FT_DEVICE_LIST_INFO_NODE*)malloc(sizeof(FT_DEVICE_LIST_INFO_NODE)*numDevs); 
+        FT_DEVICE_LIST_INFO_NODE* devInfo =
+            malloc(sizeof(FT_DEVICE_LIST_INFO_NODE)*numDevs);
         // get the device information list
         FT_STATUS ftStatus = FT_GetDeviceInfoList(devInfo,&numDevs); 
         if (ftStatus == FT_OK) {
