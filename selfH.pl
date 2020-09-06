@@ -14,8 +14,7 @@ use warnings;
 # use Data::Dumper qw(Dumper);
 
 
-#Fills arrays with '.c' and '.h' files
-sub filling {
+sub c_and_h_files {
     my ($directory)= @_;
 
     my @cfiles;
@@ -40,11 +39,11 @@ sub filling {
 use FP::Repl; repl;
 exit;
 
-#retuns names of the function prototypes required in the *.h file
-sub funcName {
-    my ($filename) = @_;
+# function prototype strings for a .c file
+sub prototypes {
+    my ($cfile) = @_;
 
-    open INPUT, "<", $filename or die $!;
+    open INPUT, "<", $cfile or die $!;
     my @func;
     while (<INPUT>) {
         if (/(^(\w){1,}.*)+\(\w{1,}\)+\s*\{\s*(.*)$/) {
@@ -66,7 +65,7 @@ sub balanceCH {
     foreach my $cName (@$cfiles) {
         (my $hName = $cName) =~ s/.c/.h/;
         # print("$hName\n");
-        my @cfunctions = funcName($cName);
+        my @cfunctions = prototypes($cName);
         # does the h file exist?
         if (grep(!/^$hName/i, @$hfiles)) {
             open OUTPUT, ">>", $hName or die $!;
@@ -75,7 +74,7 @@ sub balanceCH {
         }
         else {
             # compare function content
-            my @hfunctions = funcName($hName);
+            my @hfunctions = prototypes($hName);
             my @newlines = "";
             foreach my $cline (@cfunctions) {
                 if (grep(!/^$cline/i, @hfunctions)) {
@@ -94,7 +93,7 @@ sub balanceCH {
 my $directory = '.';
 
 #gathering file *.c *.h names
-my ($refC, $refH) = filling($directory);
+my ($refC, $refH) = c_and_h_files($directory);
 my @cfiles = @$refC ;
 my @hfiles = @$refH;
 
