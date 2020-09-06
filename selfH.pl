@@ -23,11 +23,11 @@ sub filling {
     opendir DIR, $directory or die $!;
 
     while (my $file = readdir(DIR)) {
-        if (($file =~ /[.]{1}c$/) && ($file !~ /main\.c/)) {
+        if (($file =~ /\.c$/) && ($file !~ /main\.c/)) {
             # print "$file\n";
             push @cfiles, $file;
         }
-        elsif ($file =~ /[.]{1}h$/) {
+        elsif ($file =~ /\.h$/) {
             push @hfiles, $file;
             # print "$file\n";
         }
