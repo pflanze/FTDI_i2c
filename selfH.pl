@@ -10,25 +10,14 @@
 use strict;
 use warnings;
 
-
 #testing only
 # use Data::Dumper qw(Dumper);
 
-#replace with your own directory
-my $directory = '/media/sf_C/FTDI/i2cSoftware';
-
-#gathering file *.c *.h names
-my ($refC, $refH) = filling(); 
-my @cfiles = @$refC;
-my @hfiles = @$refH;
-
-#creating h files, and prototpes
-balanceCH(\@cfiles, \@hfiles);
-
-exit(0);
 
 #Fills arrays with '.c' and '.h' files
 sub filling {
+    my ($directory)= @_;
+
     my @cfiles;
     my @hfiles;
     opendir DIR, $directory or die $!;
@@ -97,6 +86,15 @@ sub balanceCH {
     }
 }
 
-#create function to write to file 
-#inputs: $var, @array
+
+#replace with your own directory
+my $directory = '/media/sf_C/FTDI/i2cSoftware';
+
+#gathering file *.c *.h names
+my ($refC, $refH) = filling($directory);
+my @cfiles = @$refC ;
+my @hfiles = @$refH;
+
+#creating h files, and prototpes
+balanceCH(\@cfiles, \@hfiles);
 
