@@ -1,12 +1,17 @@
 #!/usr/bin/perl
 
+# How it works:
+# 1.- Open specified directory
+# 2.- Check existance of: c and h files
+# 3.- Check 1:1 relation. Else: create coresponding h files (warn if h and not c)
+# 4.- Cross reference files function prototypes, update h files accordingly
 
-Helps generating 
 
 use strict;
 use warnings;
 
-#tesrting only
+
+#testing only
 # use Data::Dumper qw(Dumper);
 
 #replace with your own directory
@@ -93,10 +98,3 @@ sub balanceCH{
 #create function to write to file 
 #inputs: $var, @array
 
-__END__
-
-How it works:
-1.- Open specified directory
-2.- Check existance of: c and h files
-3.- Check 1:1 relation. Else: create coresponding h files (warn if h and not c)
-4.- Cross reference files function prototypes, update h files accordingly
