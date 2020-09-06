@@ -1,0 +1,31 @@
+Notes:
+
+Near future:
+
+what we want:
+    use only one device
+    select one device
+    display devices connected
+    open a device
+
+
+Create make file:
+    run lsmod "unload"
+
+Create git allow:
+    *.txt
+    c,h
+
+Autogenetate h files on save using vscode
+
+
+Future:
+
+To have a device object to interact
+Create methods to interact with object
+    What methods do I need to interact with i2c?
+        receive data
+            identify fields
+        Dump current device settings
+Process data
+Display data

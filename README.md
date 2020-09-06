@@ -1,0 +1,1 @@
+This library is used to interact with i2c devices using a FTDI device
