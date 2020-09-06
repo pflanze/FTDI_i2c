@@ -87,7 +87,7 @@ sub balanceCH {
             my @newlines = "";
             foreach my $cline (@cfunctions) {
                 if (grep(!/^$cline/i, @hfunctions)) {
-                    push $cline, @newlines;
+                    push @newlines, $cline;
                 }
             }
             open OUTPUT, ">>$hName" or die $!;
