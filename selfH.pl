@@ -40,7 +40,7 @@ sub filling {
 #retuns names of the function prototypes required in the *.h file
 sub funcName {
     my $filename = $_[0];
-    open INPUT, "<$filename" or die $!;;
+    open INPUT, "<", $filename or die $!;
     my @func;
     while (<INPUT>) {
         if (/(^(\w){1,}.*)+\(\w{1,}\)+{+(.*)$/) {
@@ -66,7 +66,7 @@ sub balanceCH {
         my @cfunctions = funcName($cName);
         # does the h file exist?
         if (grep(!/^$hName/i, @hfiles)) {
-            open OUTPUT, ">>$hName" or die $!;
+            open OUTPUT, ">>", $hName or die $!;
             print OUTPUT "$_\n" for @cfunctions;
             close OUTPUT or die $!;
         }
@@ -79,7 +79,7 @@ sub balanceCH {
                     push @newlines, $cline;
                 }
             }
-            open OUTPUT, ">>$hName" or die $!;
+            open OUTPUT, ">>", $hName or die $!;
             print OUTPUT "$_\n" for @newlines;
             close OUTPUT or die $!;
         }
