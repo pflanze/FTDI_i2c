@@ -10,7 +10,7 @@
 Notes:
     Call before 
 */
-DWORD dev_createInfo(void){
+DWORD dev_createInfo(void) {
     // create the device information list
     DWORD numDevs;
     FT_STATUS ftStatus = FT_CreateDeviceInfoList(&numDevs);
@@ -33,7 +33,7 @@ Note:
     ftHandle=Null >>> indicates that a handle has not yet been created or open
 */
 
-FT_DEVICE_LIST_INFO_NODE* dev_getInfo(void){ 
+FT_DEVICE_LIST_INFO_NODE* dev_getInfo(void) { 
     DWORD numDevs = dev_createInfo();      
     if (numDevs > 0) {
         // allocate storage for list based on numDevs
@@ -58,16 +58,16 @@ FT_DEVICE_LIST_INFO_NODE* dev_getInfo(void){
 }
 //------------------------------------Device Initialization && termination
 
-FT_HANDLE* dev_open(void){
+FT_HANDLE* dev_open(void) {
     FT_HANDLE* ftHandle = malloc(sizeof(FT_HANDLE));// Handle of the FTDI device
     FT_STATUS ftStatus;// Result of each D2XX call
 
     //----Open by serial number
     ftStatus = FT_OpenEx("FT4J3FQ2", FT_OPEN_BY_SERIAL_NUMBER, ftHandle);
-    if(ftStatus == FT_OK){// Check if Open was successful
+    if (ftStatus == FT_OK) {// Check if Open was successful
         return ftHandle;
     }
-    else{    
+    else {
         printf("Can't open FT4J3FQ2 device! \n");
         printf("Exiting the program....\n");
         exit(0);
@@ -76,7 +76,7 @@ FT_HANDLE* dev_open(void){
 
 
 //Not finished
-int dev_close(void){
+int dev_close(void) {
     //free data
     // free(devInfo);
     // free(ftHandle);
