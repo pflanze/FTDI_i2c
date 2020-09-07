@@ -36,9 +36,6 @@ sub c_and_h_files {
     return (\@cfiles, \@hfiles)
 }
 
-use FP::Repl; repl;
-exit;
-
 # function prototype strings for a .c file
 sub prototypes {
     my ($cfile) = @_;
