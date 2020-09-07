@@ -64,7 +64,7 @@ sub balanceCH {
         # print("$hName\n");
         my @cfunctions = prototypes($cName);
         # does the h file exist?
-        if (! grep(/^$hName/i, @$hfiles)) {
+        if (! grep(/^\Q$hName\E\z/, @$hfiles)) {
             open OUTPUT, ">>", $hName or die $!;
             print OUTPUT "$_\n" for @cfunctions;
             close OUTPUT or die $!;
