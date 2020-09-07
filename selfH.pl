@@ -8,7 +8,7 @@
 
 
 use strict;
-use warnings;
+use warnings FATAL => 'uninitialized';
 
 #testing only
 # use Data::Dumper qw(Dumper);
