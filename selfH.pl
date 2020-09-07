@@ -62,23 +62,23 @@ sub balanceCH {
     foreach my $cName (@$cfiles) {
         (my $hName = $cName) =~ s/.c/.h/;
         # print("$hName\n");
-        my @cfunctions = prototypes($cName);
+        my @cprototypes = prototypes($cName);
         # does the h file exist?
         if (! grep(/^\Q$hName\E\z/, @$hfiles)) {
             open OUTPUT, ">>", $hName or die $!;
-            print OUTPUT "$_\n" for @cfunctions;
+            print OUTPUT "$_\n" for @cprototypes;
             close OUTPUT or die $!;
         }
         else {
             # compare function content
-            my @hfunctions = prototypes($hName);
+            my @hprototypes = prototypes($hName);
             # ^ XXX prototypes does not currently work for h file (and
             # shouldn't, except when passing a flag to accept
             # ";"-terminated prototype sections instead of
             # "{"-terminated ones.)
             my @newlines = "";
-            foreach my $cline (@cfunctions) {
-                if (grep(!/^$cline/i, @hfunctions)) {
+            foreach my $cline (@cprototypes) {
+                if (grep(!/^$cline/i, @hprototypes)) {
                     push @newlines, $cline;
                 }
             }
