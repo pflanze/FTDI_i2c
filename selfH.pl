@@ -72,6 +72,10 @@ sub balanceCH {
         else {
             # compare function content
             my @hfunctions = prototypes($hName);
+            # ^ XXX prototypes does not currently work for h file (and
+            # shouldn't, except when passing a flag to accept
+            # ";"-terminated prototype sections instead of
+            # "{"-terminated ones.)
             my @newlines = "";
             foreach my $cline (@cfunctions) {
                 if (grep(!/^$cline/i, @hfunctions)) {
