@@ -78,7 +78,7 @@ sub balanceCH {
             # "{"-terminated ones.)
             my @newlines = "";
             foreach my $cline (@cprototypes) {
-                if (grep(!/^$cline/i, @hprototypes)) {
+                if (! grep(/^\Q$cline\E\z/, @hprototypes)) {
                     push @newlines, $cline;
                 }
             }
