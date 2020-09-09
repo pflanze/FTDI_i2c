@@ -11,6 +11,8 @@ use strict;
 use warnings FATAL => 'uninitialized';
 use feature 'signatures'; no warnings 'experimental::signatures';
 
+use Chj::TEST;
+
 #testing only
 # use Data::Dumper qw(Dumper);
 
@@ -64,6 +66,23 @@ sub prototypes($cfile, $c_or_h) {
     close INPUT or die $!;
     return @func;
 }
+
+TEST { [prototypes  "bridge.h","h"] }
+[
+ 'DWORD dev_createInfo(void);',
+ 'FT_DEVICE_LIST_INFO_NODE*  dev_getInfo(void);',
+ 'FT_HANDLE* dev_open(void);',
+ 'int dev_close(void);'
+];
+
+TEST { [prototypes  "bridge.c","c"] }
+[
+ 'DWORD dev_createInfo(abr);',
+ 'FT_DEVICE_LIST_INFO_NODE* dev_getInfo(void);',
+ 'FT_HANDLE* dev_open(void);',
+ 'int dev_close(void);'
+];
+
 
 #create coresponding h files
 #if does not exist: create and fill
