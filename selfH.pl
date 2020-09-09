@@ -35,15 +35,30 @@ sub c_and_h_files($directory) {
     return (\@cfiles, \@hfiles)
 }
 
-# function prototype strings for a .c file
-sub prototypes($cfile) {
+# function prototype strings for a .c (extract from definition) or .h
+# (take declaration) file
+sub prototypes($cfile, $c_or_h) {
+    my $expected_braceOrSem=
+        $c_or_h eq 'h' ? ";" :
+        $c_or_h eq 'c' ? "{" :
+        die "invalid c_or_h value";
     open INPUT, "<", $cfile or die $!;
     my @func;
     while (<INPUT>) {
-        if (/(^(\w){1,}.*)+\(\w{1,}\)+\s*\{\s*(.*)$/) {
-            my ($found, $rest) = split(/\s*{/, $_, 2);
-            # print("$found\n");
-            push @func, "$found;";
+        if (my ($proto,
+                $return_type_and_name, $parameters,
+                $braceOrSem)=
+            /^
+            (
+            (\w+.*)+
+            \((\w+)\)+
+            )
+            \s*
+            (\{|;)
+            /x) {
+            if ($braceOrSem eq $expected_braceOrSem) {
+                push @func, "$proto;";
+            }
         }
     }
     close INPUT or die $!;
@@ -57,7 +72,7 @@ sub balanceCH($cfiles, $hfiles) {
     foreach my $cName (@$cfiles) {
         (my $hName = $cName) =~ s/.c/.h/;
         # print("$hName\n");
-        my @cprototypes = prototypes($cName);
+        my @cprototypes = prototypes($cName, 'c');
         # does the h file exist?
         if (! grep(/^\Q$hName\E\z/, @$hfiles)) {
             open OUTPUT, ">>", $hName or die $!;
@@ -66,11 +81,7 @@ sub balanceCH($cfiles, $hfiles) {
         }
         else {
             # compare function content
-            my @hprototypes = prototypes($hName);
-            # ^ XXX prototypes does not currently work for h file (and
-            # shouldn't, except when passing a flag to accept
-            # ";"-terminated prototype sections instead of
-            # "{"-terminated ones.)
+            my @hprototypes = prototypes($hName, 'h');
             my @newlines = "";
             foreach my $cline (@cprototypes) {
                 if (! grep(/^\Q$cline\E\z/, @hprototypes)) {
