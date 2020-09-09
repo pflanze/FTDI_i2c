@@ -9,14 +9,13 @@
 
 use strict;
 use warnings FATAL => 'uninitialized';
+use feature 'signatures'; no warnings 'experimental::signatures';
 
 #testing only
 # use Data::Dumper qw(Dumper);
 
 
-sub c_and_h_files {
-    my ($directory)= @_;
-
+sub c_and_h_files($directory) {
     my @cfiles;
     my @hfiles;
     opendir DIR, $directory or die $!;
@@ -37,9 +36,7 @@ sub c_and_h_files {
 }
 
 # function prototype strings for a .c file
-sub prototypes {
-    my ($cfile) = @_;
-
+sub prototypes($cfile) {
     open INPUT, "<", $cfile or die $!;
     my @func;
     while (<INPUT>) {
@@ -56,9 +53,7 @@ sub prototypes {
 #create coresponding h files
 #if does not exist: create and fill
 #if it does: cross reference and append new functions
-sub balanceCH {
-    my ($cfiles, $hfiles)= @_;
-
+sub balanceCH($cfiles, $hfiles) {
     foreach my $cName (@$cfiles) {
         (my $hName = $cName) =~ s/.c/.h/;
         # print("$hName\n");
