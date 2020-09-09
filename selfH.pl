@@ -101,7 +101,7 @@ sub balanceCH($cfiles, $hfiles) {
         else {
             # compare function content
             my @hprototypes = prototypes($hName, 'h');
-            my @newlines = "";
+            my @newlines;
             foreach my $cline (@cprototypes) {
                 if (! grep(/^\Q$cline\E\z/, @hprototypes)) {
                     push @newlines, $cline;
