@@ -140,11 +140,21 @@ TEST { [ string_prototypes $tst_bridge_c, "c" ] }
 #if does not exist: create and fill
 #if it does: cross reference and append new functions
 
-sub action_execute($action) {
-    my ($what, $hName, $prototypes)= @$action;
-    open OUTPUT, ">>", $hName or die $!;
-    print OUTPUT "$_\n" for @$prototypes;
-    close OUTPUT or die $!;
+package Action {
+    sub new($class, @args) {
+        bless {@args}, $class
+    }
+    sub execute($self) {
+        open OUTPUT, ">>", $$self{path} or die $!;
+        print OUTPUT "$_\n" for @{$$self{prototypes}};
+        close OUTPUT or die $!;
+    }
+}
+package CreateAction {
+    use base "Action";
+}
+package AppendAction {
+    use base "Action";
 }
 
 sub balance_c_h($hfiles, $cName) {
@@ -153,15 +163,16 @@ sub balance_c_h($hfiles, $cName) {
     my @cprototypes = file_prototypes($cName, 'c');
     # does the h file exist?
     if (! grep { $_ eq $hName } @$hfiles) {
-        [ "create", $hName, \@cprototypes ]
+        CreateAction->new( path=> $hName, prototypes=> \@cprototypes )
     }
     else {
         # compare function content
         my @hprototypes = file_prototypes($hName, 'h');
-        [ "append",
-          $hName,
-          [ grep { my $cline=$_; ! grep { $_ eq $cline } @hprototypes }
-            @cprototypes ]]
+        AppendAction->new(path=> $hName,
+                          prototypes=>
+                          [ grep { my $cline=$_;
+                                   ! grep { $_ eq $cline } @hprototypes
+                            } @cprototypes ])
     }
 }
 
@@ -183,7 +194,7 @@ TEST { balance_all(c_and_h_files ".") }
 
 sub balanceCH($cfiles, $hfiles) {
     my $actions= balance_all($cfiles, $hfiles);
-    action_execute $_ for @$actions;
+    $_->execute for @$actions;
 }
 
 
