@@ -41,12 +41,12 @@ sub c_and_h_files($directory) {
 
 # function prototype strings for a .c (extract from definition) or .h
 # (take declaration) file
-sub prototypes($path, $c_or_h) {
+
+sub string_prototypes($inp, $c_or_h) {
     my $expected_braceOrSem=
         $c_or_h eq 'h' ? ";" :
         $c_or_h eq 'c' ? "{" :
         die "invalid c_or_h value";
-    my $inp = xgetfile_utf8 $path;
     my @func;
     while ($inp=~
             /\n
@@ -67,7 +67,12 @@ sub prototypes($path, $c_or_h) {
     return @func;
 }
 
-TEST { [prototypes  "bridge.h","h"] }
+sub file_prototypes($path, $c_or_h) {
+    string_prototypes(xgetfile_utf8($path),
+                      $c_or_h)
+}
+
+TEST { [file_prototypes  "bridge.h","h"] }
 [
  'DWORD dev_createInfo(void);',
  'FT_DEVICE_LIST_INFO_NODE*  dev_getInfo(void);',
@@ -75,7 +80,7 @@ TEST { [prototypes  "bridge.h","h"] }
  'int dev_close(void);'
 ];
 
-TEST { [prototypes  "bridge.c","c"] }
+TEST { [file_prototypes  "bridge.c","c"] }
 [
  'DWORD dev_createInfo(abr);',
  'FT_DEVICE_LIST_INFO_NODE* dev_getInfo(void);',
@@ -91,7 +96,7 @@ sub balanceCH($cfiles, $hfiles) {
     foreach my $cName (@$cfiles) {
         (my $hName = $cName) =~ s/.c/.h/;
         # print("$hName\n");
-        my @cprototypes = prototypes($cName, 'c');
+        my @cprototypes = file_prototypes($cName, 'c');
         # does the h file exist?
         if (! grep(/^\Q$hName\E\z/, @$hfiles)) {
             open OUTPUT, ">>", $hName or die $!;
@@ -100,7 +105,7 @@ sub balanceCH($cfiles, $hfiles) {
         }
         else {
             # compare function content
-            my @hprototypes = prototypes($hName, 'h');
+            my @hprototypes = file_prototypes($hName, 'h');
             my @newlines;
             foreach my $cline (@cprototypes) {
                 if (! grep(/^\Q$cline\E\z/, @hprototypes)) {
