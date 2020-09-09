@@ -12,6 +12,8 @@ use warnings FATAL => 'uninitialized';
 use feature 'signatures'; no warnings 'experimental::signatures';
 
 use Chj::TEST;
+use Chj::xIOUtil qw(xgetfile_utf8);
+
 
 #testing only
 # use Data::Dumper qw(Dumper);
@@ -39,31 +41,29 @@ sub c_and_h_files($directory) {
 
 # function prototype strings for a .c (extract from definition) or .h
 # (take declaration) file
-sub prototypes($cfile, $c_or_h) {
+sub prototypes($path, $c_or_h) {
     my $expected_braceOrSem=
         $c_or_h eq 'h' ? ";" :
         $c_or_h eq 'c' ? "{" :
         die "invalid c_or_h value";
-    open INPUT, "<", $cfile or die $!;
+    my $inp = xgetfile_utf8 $path;
     my @func;
-    while (<INPUT>) {
-        if (my ($proto,
-                $return_type_and_name, $parameters,
-                $braceOrSem)=
-            /^
+    while ($inp=~
+            /\n
             (
-            (\w+.*)+
+            (\w+[^\n]*?)+
             \((\w+)\)+
             )
             \s*
             (\{|;)
-            /x) {
-            if ($braceOrSem eq $expected_braceOrSem) {
-                push @func, "$proto;";
-            }
+           /sxgc) {
+        my ($proto,
+            $return_type_and_name, $parameters,
+            $braceOrSem)= ($1,$2,$3,$4);
+        if ($braceOrSem eq $expected_braceOrSem) {
+            push @func, "$proto;";
         }
     }
-    close INPUT or die $!;
     return @func;
 }
 
