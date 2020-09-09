@@ -139,31 +139,34 @@ TEST { [ string_prototypes $tst_bridge_c, "c" ] }
 #create coresponding h files
 #if does not exist: create and fill
 #if it does: cross reference and append new functions
-sub balanceCH($cfiles, $hfiles) {
-    foreach my $cName (@$cfiles) {
-        (my $hName = $cName) =~ s/.c/.h/;
-        # print("$hName\n");
-        my @cprototypes = file_prototypes($cName, 'c');
-        # does the h file exist?
-        if (! grep(/^\Q$hName\E\z/, @$hfiles)) {
-            open OUTPUT, ">>", $hName or die $!;
-            print OUTPUT "$_\n" for @cprototypes;
-            close OUTPUT or die $!;
-        }
-        else {
-            # compare function content
-            my @hprototypes = file_prototypes($hName, 'h');
-            my @newlines;
-            foreach my $cline (@cprototypes) {
-                if (! grep(/^\Q$cline\E\z/, @hprototypes)) {
-                    push @newlines, $cline;
-                }
-            }
-            open OUTPUT, ">>", $hName or die $!;
-            print OUTPUT "$_\n" for @newlines;
-            close OUTPUT or die $!;
-        }
+
+sub balance_c_h($hfiles, $cName) {
+    (my $hName = $cName) =~ s/.c/.h/;
+    # print("$hName\n");
+    my @cprototypes = file_prototypes($cName, 'c');
+    # does the h file exist?
+    if (! grep(/^\Q$hName\E\z/, @$hfiles)) {
+        open OUTPUT, ">>", $hName or die $!;
+        print OUTPUT "$_\n" for @cprototypes;
+        close OUTPUT or die $!;
     }
+    else {
+        # compare function content
+        my @hprototypes = file_prototypes($hName, 'h');
+        my @newlines;
+        foreach my $cline (@cprototypes) {
+            if (! grep(/^\Q$cline\E\z/, @hprototypes)) {
+                push @newlines, $cline;
+            }
+        }
+        open OUTPUT, ">>", $hName or die $!;
+        print OUTPUT "$_\n" for @newlines;
+        close OUTPUT or die $!;
+    }
+}
+
+sub balanceCH($cfiles, $hfiles) {
+    balance_c_h($hfiles, $_) for @$cfiles
 }
 
 
