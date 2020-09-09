@@ -167,6 +167,12 @@ sub balanceCH($cfiles, $hfiles) {
 }
 
 
+
+if ($ENV{REPL}) {
+    require FP::Repl; FP::Repl::repl();
+    exit;
+}
+
 #replace with your own directory
 my $directory = '.';
 
