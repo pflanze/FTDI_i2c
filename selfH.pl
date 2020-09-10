@@ -172,6 +172,18 @@ sub balance_all($cfiles, $hfiles) {
     [ map { balance_c_h($hfiles, $_) } @$cfiles ]
 }
 
+TEST { balance_all(c_and_h_files ".") }
+[
+ [
+  'append',
+  'bridge.h',
+  [
+   'DWORD dev_createInfo(abr);',
+   'FT_DEVICE_LIST_INFO_NODE* dev_getInfo(void);'
+  ]
+ ]
+];
+
 sub balanceCH($cfiles, $hfiles) {
     my $actions= balance_all($cfiles, $hfiles);
     action_execute $_ for @$actions;
