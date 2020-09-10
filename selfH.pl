@@ -152,7 +152,7 @@ sub balance_c_h($hfiles, $cName) {
     # print("$hName\n");
     my @cprototypes = file_prototypes($cName, 'c');
     # does the h file exist?
-    if (! grep(/^\Q$hName\E\z/, @$hfiles)) {
+    if (! grep { $_ eq $hName } @$hfiles) {
         [ "create", $hName, \@cprototypes ]
     }
     else {
@@ -160,7 +160,7 @@ sub balance_c_h($hfiles, $cName) {
         my @hprototypes = file_prototypes($hName, 'h');
         my @newlines;
         foreach my $cline (@cprototypes) {
-            if (! grep(/^\Q$cline\E\z/, @hprototypes)) {
+            if (! grep { $_ eq $cline } @hprototypes) {
                 push @newlines, $cline;
             }
         }
