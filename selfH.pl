@@ -12,11 +12,46 @@ use warnings FATAL => 'uninitialized';
 use feature 'signatures'; no warnings 'experimental::signatures';
 
 use Chj::TEST;
-use Chj::xIOUtil qw(xgetfile_utf8);
 
 
-#testing only
-# use Data::Dumper qw(Dumper);
+package SelfH::File {
+    # a File, possibly with in-memory content for testing
+    use Chj::xIOUtil qw(xgetfile_utf8);
+    use FP::Struct ["path", "content"], "FP::Struct::Show";
+
+    sub content($self) {
+        $$self{content} //= xgetfile_utf8($$self{path})
+    }
+    sub prototypes($self, $c_or_h) {
+        main::string_prototypes($self->content, $c_or_h)
+    }
+    sub hPath($self) {
+        my $str= $self->path;
+        $str =~ s/\.c\z/.h/;
+        $str
+    }
+    _END_
+}
+SelfH::File::constructors->import;
+
+package SelfH::CAndHFiles {
+    use FP::Struct ["directory", "cfiles", "hfiles"], "FP::Struct::Show";
+
+    sub hfiles_hash($self) {
+        $$self{hfiles_hash} //= +{ map { $_->path => $_ } @{$self->hfiles} }
+    }
+    sub has_h($self, $cFile) {
+        my $hpath= $cFile->hPath;
+        exists $self->hfiles_hash->{$hpath}
+    }
+    sub maybe_hFile($self, $cFile) {
+        # the corresponding h file if it already exists
+        my $hpath= $cFile->hPath;
+        $self->hfiles_hash->{$hpath}
+    }
+    _END_
+}
+SelfH::CAndHFiles::constructors->import;
 
 
 sub c_and_h_files($directory) {
@@ -36,7 +71,9 @@ sub c_and_h_files($directory) {
         else { next; }
     }
     closedir DIR or die $!;
-    return (\@cfiles, \@hfiles)
+    CAndHFiles($directory,
+               [ map { File($_) } @cfiles],
+               [ map { File($_) } @hfiles])
 }
 
 # function prototype strings for a .c (extract from definition) or .h
@@ -67,9 +104,8 @@ sub string_prototypes($inp, $c_or_h) {
     return @func;
 }
 
-sub file_prototypes($path, $c_or_h) {
-    string_prototypes(xgetfile_utf8($path),
-                      $c_or_h)
+sub file_prototypes($file, $c_or_h) {
+    string_prototypes($file->content, $c_or_h)
 }
 
 my $tst_bridge_h= q'
@@ -160,27 +196,25 @@ package SelfH::AppendAction {
 }
 SelfH::AppendAction::constructors->import;
 
-sub balance_c_h($hfiles, $cName) {
-    (my $hName = $cName) =~ s/.c/.h/;
-    # print("$hName\n");
-    my @cprototypes = file_prototypes($cName, 'c');
-    # does the h file exist?
-    if (! grep { $_ eq $hName } @$hfiles) {
-        CreateAction($hName, \@cprototypes)
-    }
-    else {
+sub balance_c_h($cAndHFiles, $cFile) {
+    my @cprototypes = file_prototypes($cFile, 'c');
+    if (defined (my $hFile= $cAndHFiles->maybe_hFile($cFile))) {
         # compare function content
-        my @hprototypes = file_prototypes($hName, 'h');
-        AppendAction($hName,
+        my @hprototypes = file_prototypes($hFile, 'h');
+        AppendAction($cFile->hPath,
                      [ grep {
                          my $cline=$_;
                          ! grep { $_ eq $cline } @hprototypes
                        } @cprototypes ])
     }
+    else {
+        # h file doesn't exist yet
+        CreateAction($cFile->hPath, \@cprototypes)
+    }
 }
 
-sub balance_all($cfiles, $hfiles) {
-    [ map { balance_c_h($hfiles, $_) } @$cfiles ]
+sub balance_all($cAndHFiles) {
+    [ map { balance_c_h($cAndHFiles, $_) } @{$cAndHFiles->cfiles} ]
 }
 
 TEST { balance_all(c_and_h_files ".") }
@@ -190,8 +224,8 @@ TEST { balance_all(c_and_h_files ".") }
                'FT_DEVICE_LIST_INFO_NODE* dev_getInfo(void);'])
 ];
 
-sub balanceCH($cfiles, $hfiles) {
-    my $actions= balance_all($cfiles, $hfiles);
+sub balanceCH($cAndHFiles) {
+    my $actions= balance_all($cAndHFiles);
     $_->execute for @$actions;
 }
 
@@ -207,10 +241,5 @@ if ($ENV{REPL}) {
 my $directory = '.';
 
 #gathering file *.c *.h names
-my ($refC, $refH) = c_and_h_files($directory);
-my @cfiles = @$refC ;
-my @hfiles = @$refH;
-
-#creating h files, and prototpes
-balanceCH(\@cfiles, \@hfiles);
+balanceCH(c_and_h_files($directory));
 
