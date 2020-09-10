@@ -140,22 +140,25 @@ TEST { [ string_prototypes $tst_bridge_c, "c" ] }
 #if does not exist: create and fill
 #if it does: cross reference and append new functions
 
-package Action {
-    sub new($class, @args) {
-        bless {@args}, $class
-    }
+package SelfH::Action {
+    use FP::Struct ["path", "prototypes"], "FP::Struct::Show";
     sub execute($self) {
-        open OUTPUT, ">>", $$self{path} or die $!;
-        print OUTPUT "$_\n" for @{$$self{prototypes}};
+        open OUTPUT, ">>", $self->path or die $!;
+        print OUTPUT "$_\n" for @{$self->prototypes};
         close OUTPUT or die $!;
     }
+    _END_
 }
-package CreateAction {
-    use base "Action";
+package SelfH::CreateAction {
+    use FP::Struct [], "SelfH::Action";
+    _END_
 }
-package AppendAction {
-    use base "Action";
+SelfH::CreateAction::constructors->import;
+package SelfH::AppendAction {
+    use FP::Struct [], "SelfH::Action";
+    _END_
 }
+SelfH::AppendAction::constructors->import;
 
 sub balance_c_h($hfiles, $cName) {
     (my $hName = $cName) =~ s/.c/.h/;
@@ -163,16 +166,16 @@ sub balance_c_h($hfiles, $cName) {
     my @cprototypes = file_prototypes($cName, 'c');
     # does the h file exist?
     if (! grep { $_ eq $hName } @$hfiles) {
-        CreateAction->new( path=> $hName, prototypes=> \@cprototypes )
+        CreateAction($hName, \@cprototypes)
     }
     else {
         # compare function content
         my @hprototypes = file_prototypes($hName, 'h');
-        AppendAction->new(path=> $hName,
-                          prototypes=>
-                          [ grep { my $cline=$_;
-                                   ! grep { $_ eq $cline } @hprototypes
-                            } @cprototypes ])
+        AppendAction($hName,
+                     [ grep {
+                         my $cline=$_;
+                         ! grep { $_ eq $cline } @hprototypes
+                       } @cprototypes ])
     }
 }
 
@@ -182,14 +185,9 @@ sub balance_all($cfiles, $hfiles) {
 
 TEST { balance_all(c_and_h_files ".") }
 [
- [
-  'append',
-  'bridge.h',
-  [
-   'DWORD dev_createInfo(abr);',
-   'FT_DEVICE_LIST_INFO_NODE* dev_getInfo(void);'
-  ]
- ]
+ AppendAction('bridge.h',
+              ['DWORD dev_createInfo(abr);',
+               'FT_DEVICE_LIST_INFO_NODE* dev_getInfo(void);'])
 ];
 
 sub balanceCH($cfiles, $hfiles) {
