@@ -158,13 +158,10 @@ sub balance_c_h($hfiles, $cName) {
     else {
         # compare function content
         my @hprototypes = file_prototypes($hName, 'h');
-        my @newlines;
-        foreach my $cline (@cprototypes) {
-            if (! grep { $_ eq $cline } @hprototypes) {
-                push @newlines, $cline;
-            }
-        }
-        [ "append", $hName, \@newlines ]
+        [ "append",
+          $hName,
+          [ grep { my $cline=$_; ! grep { $_ eq $cline } @hprototypes }
+            @cprototypes ]]
     }
 }
 
