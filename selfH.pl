@@ -198,6 +198,7 @@ sub balanceCH($cfiles, $hfiles) {
 
 
 if ($ENV{REPL}) {
+    require FP::Repl::Trap;
     require FP::Repl; FP::Repl::repl();
     exit;
 }
