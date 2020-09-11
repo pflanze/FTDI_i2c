@@ -104,10 +104,6 @@ sub string_prototypes($inp, $c_or_h) {
     return @func;
 }
 
-sub file_prototypes($file, $c_or_h) {
-    string_prototypes($file->content, $c_or_h)
-}
-
 my $tst_bridge_h= q'
 #include "../ftd2xx.h"
 
@@ -197,7 +193,7 @@ package SelfH::AppendAction {
 SelfH::AppendAction::constructors->import;
 
 sub balance_c_h($cAndHFiles, $cFile) {
-    my @cprototypes = file_prototypes($cFile, 'c');
+    my @cprototypes = $cFile->prototypes('c');
     if (defined (my $hFile= $cAndHFiles->maybe_hFile($cFile))) {
         # compare function content
         my @hprototypes = file_prototypes($hFile, 'h');
