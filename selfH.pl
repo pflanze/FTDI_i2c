@@ -1,11 +1,8 @@
 #!/usr/bin/perl
 
-# How it works:
-# 1.- Open specified directory
-# 2.- Check existance of: c and h files
-# 3.- Check 1:1 relation. Else: create coresponding h files (warn if h and not c)
-# 4.- Cross reference files function prototypes, update h files accordingly
-
+# For all the .c files, create or overwrite a _prototypes.h file which
+# contains all the prototypes for the procedures in the corresponding
+# .c file.
 
 use strict;
 use warnings FATAL => 'uninitialized';
@@ -27,53 +24,23 @@ package SelfH::File {
     }
     sub hPath($self) {
         my $str= $self->path;
-        $str =~ s/\.c\z/.h/;
+        $str =~ s/\.c\z/_prototypes.h/;
         $str
     }
     _END_
 }
 SelfH::File::constructors->import;
 
-package SelfH::CAndHFiles {
-    use FP::Struct ["directory", "cfiles", "hfiles"], "FP::Struct::Show";
-
-    sub hfiles_hash($self) {
-        $$self{hfiles_hash} //= +{ map { $_->path => $_ } @{$self->hfiles} }
-    }
-    sub has_h($self, $cFile) {
-        my $hpath= $cFile->hPath;
-        exists $self->hfiles_hash->{$hpath}
-    }
-    sub maybe_hFile($self, $cFile) {
-        # the corresponding h file if it already exists
-        my $hpath= $cFile->hPath;
-        $self->hfiles_hash->{$hpath}
-    }
-    _END_
-}
-SelfH::CAndHFiles::constructors->import;
-
-
-sub c_and_h_files($directory) {
+sub c_files($directory) {
     my @cfiles;
-    my @hfiles;
     opendir DIR, $directory or die $!;
-
     while (my $file = readdir(DIR)) {
         if (($file =~ /\.c$/) && ($file !~ /main\.c/)) {
-            # print "$file\n";
             push @cfiles, $file;
         }
-        elsif ($file =~ /\.h$/) {
-            push @hfiles, $file;
-            # print "$file\n";
-        }
-        else { next; }
     }
     closedir DIR or die $!;
-    CAndHFiles($directory,
-               [ map { File($_) } @cfiles],
-               [ map { File($_) } @hfiles])
+    [ map { File($_) } @cfiles]
 }
 
 # function prototype strings for a .c (extract from definition) or .h
@@ -168,14 +135,10 @@ TEST { [ string_prototypes $tst_bridge_c, "c" ] }
 ];
 
 
-#create coresponding h files
-#if does not exist: create and fill
-#if it does: cross reference and append new functions
-
 package SelfH::Action {
     use FP::Struct ["path", "prototypes"], "FP::Struct::Show";
     sub execute($self) {
-        open OUTPUT, ">>", $self->path or die $!;
+        open OUTPUT, $self->write_mode, $self->path or die $!;
         print OUTPUT "$_\n" for @{$self->prototypes};
         close OUTPUT or die $!;
     }
@@ -183,45 +146,33 @@ package SelfH::Action {
 }
 package SelfH::CreateAction {
     use FP::Struct [], "SelfH::Action";
+    sub write_mode { ">" }
     _END_
 }
 SelfH::CreateAction::constructors->import;
-package SelfH::AppendAction {
-    use FP::Struct [], "SelfH::Action";
-    _END_
-}
-SelfH::AppendAction::constructors->import;
 
-sub balance_c_h($cAndHFiles, $cFile) {
+sub cFile_to_hFile_creation($cFile) {
     my @cprototypes = $cFile->prototypes('c');
-    if (defined (my $hFile= $cAndHFiles->maybe_hFile($cFile))) {
-        # compare function content
-        my @hprototypes = file_prototypes($hFile, 'h');
-        AppendAction($cFile->hPath,
-                     [ grep {
-                         my $cline=$_;
-                         ! grep { $_ eq $cline } @hprototypes
-                       } @cprototypes ])
-    }
-    else {
-        # h file doesn't exist yet
-        CreateAction($cFile->hPath, \@cprototypes)
-    }
+    CreateAction($cFile->hPath, \@cprototypes)
 }
 
-sub balance_all($cAndHFiles) {
-    [ map { balance_c_h($cAndHFiles, $_) } @{$cAndHFiles->cfiles} ]
+sub cFiles_to_hFile_creations($cFiles) {
+    [ map {
+        cFile_to_hFile_creation($_)
+      } @$cFiles ]
 }
 
-TEST { balance_all(c_and_h_files ".") }
+TEST { cFiles_to_hFile_creations(c_files ".") }
 [
- AppendAction('bridge.h',
+ CreateAction('bridge_prototypes.h',
               ['DWORD dev_createInfo(abr);',
-               'FT_DEVICE_LIST_INFO_NODE* dev_getInfo(void);'])
+               'FT_DEVICE_LIST_INFO_NODE* dev_getInfo(void);',
+               'FT_HANDLE* dev_open(void);',
+               'int dev_close(void);'])
 ];
 
-sub balanceCH($cAndHFiles) {
-    my $actions= balance_all($cAndHFiles);
+sub main($directory) {
+    my $actions= cFiles_to_hFile_creations(c_files($directory));
     $_->execute for @$actions;
 }
 
@@ -233,9 +184,5 @@ if ($ENV{REPL}) {
     exit;
 }
 
-#replace with your own directory
-my $directory = '.';
 
-#gathering file *.c *.h names
-balanceCH(c_and_h_files($directory));
-
+main(".");
