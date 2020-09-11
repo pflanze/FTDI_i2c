@@ -134,48 +134,20 @@ TEST { [ string_prototypes $tst_bridge_c, "c" ] }
  'int dev_close(void);'
 ];
 
-
-package SelfH::Action {
-    use FP::Struct ["path", "prototypes"], "FP::Struct::Show";
-    sub execute($self) {
-        open OUTPUT, $self->write_mode, $self->path or die $!;
-        print OUTPUT "$_\n" for @{$self->prototypes};
-        close OUTPUT or die $!;
-    }
-    _END_
+sub save_prototypes($path, $prototypes, $write_mode) {
+    open OUTPUT, $write_mode, $path or die $!;
+    print OUTPUT "$_\n" for @$prototypes;
+    close OUTPUT or die $!;
 }
-package SelfH::CreateAction {
-    use FP::Struct [], "SelfH::Action";
-    sub write_mode { ">" }
-    _END_
-}
-SelfH::CreateAction::constructors->import;
 
-sub cFile_to_hFile_creation($cFile) {
+sub cFile_to_hFile($cFile) {
     my @cprototypes = $cFile->prototypes('c');
-    CreateAction($cFile->hPath, \@cprototypes)
+    save_prototypes($cFile->hPath, \@cprototypes, ">")
 }
-
-sub cFiles_to_hFile_creations($cFiles) {
-    [ map {
-        cFile_to_hFile_creation($_)
-      } @$cFiles ]
-}
-
-TEST { cFiles_to_hFile_creations(c_files ".") }
-[
- CreateAction('bridge_prototypes.h',
-              ['DWORD dev_createInfo(void);',
-               'FT_DEVICE_LIST_INFO_NODE* dev_getInfo(void);',
-               'FT_HANDLE* dev_open(void);',
-               'int dev_close(void);'])
-];
 
 sub main($directory) {
-    my $actions= cFiles_to_hFile_creations(c_files($directory));
-    $_->execute for @$actions;
+    cFile_to_hFile($_) for @{c_files($directory)}
 }
-
 
 
 if ($ENV{REPL}) {
