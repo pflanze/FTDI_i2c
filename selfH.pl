@@ -51,7 +51,7 @@ sub string_prototypes($inp, $c_or_h) {
         $c_or_h eq 'h' ? ";" :
         $c_or_h eq 'c' ? "{" :
         die "invalid c_or_h value";
-    my @func;
+    my @prototypes;
     while ($inp=~
             /\n
             (
@@ -65,10 +65,10 @@ sub string_prototypes($inp, $c_or_h) {
             $return_type_and_name, $parameters,
             $braceOrSem)= ($1,$2,$3,$4);
         if ($braceOrSem eq $expected_braceOrSem) {
-            push @func, "$proto;";
+            push @prototypes, "$proto;";
         }
     }
-    return @func;
+    return \@prototypes;
 }
 
 my $tst_bridge_h= q'
@@ -118,7 +118,7 @@ int dev_close(void) {
 // }
 ';
 
-TEST { [ string_prototypes $tst_bridge_h, "h" ] }
+TEST { string_prototypes $tst_bridge_h, "h" }
 [
  'DWORD dev_createInfo(void);',
  'FT_DEVICE_LIST_INFO_NODE*  dev_getInfo(void);',
@@ -126,7 +126,7 @@ TEST { [ string_prototypes $tst_bridge_h, "h" ] }
  'int dev_close(void);'
 ];
 
-TEST { [ string_prototypes $tst_bridge_c, "c" ] }
+TEST { string_prototypes $tst_bridge_c, "c" }
 [
  'DWORD dev_createInfo(abr);',
  'FT_DEVICE_LIST_INFO_NODE* dev_getInfo(void);',
@@ -141,8 +141,9 @@ sub save_prototypes($path, $prototypes, $write_mode) {
 }
 
 sub cFile_to_hFile($cFile) {
-    my @cprototypes = $cFile->prototypes('c');
-    save_prototypes($cFile->hPath, \@cprototypes, ">")
+    save_prototypes($cFile->hPath,
+                    $cFile->prototypes('c'),
+                    ">")
 }
 
 sub main($directory) {
