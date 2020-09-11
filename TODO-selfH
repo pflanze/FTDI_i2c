@@ -1,0 +1,9 @@
+* should turn this whole repository purely into one for "selfH" (give
+  it another name).
+
+* use various .c and _prototypes.h files for testing purposes in a
+  test directory.
+
+* improve the regular expression (doesn't even accept procedure
+  variable arguments currently); but, really use an existing parser;
+  but, for that, move to OCaml or C.
